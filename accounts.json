@@ -1,0 +1,84 @@
+[
+  {
+    "name": "Ed Brokerage",
+    "type": "Brokerage",
+    "holdings": {
+      "stocks": 0,
+      "bonds": 0,
+      "cash": 0
+    }
+  },
+  {
+    "name": "Ed Roth IRA",
+    "type": "RothIRA",
+    "holdings": {
+      "stocks": 87926,
+      "bonds": 0,
+      "cash": 4615
+    }
+  },
+  {
+    "name": "Ed Trad IRA",
+    "type": "TradIRA",
+    "holdings": {
+      "stocks": 0,
+      "bonds": 19421,
+      "cash": 14193
+    }
+  },
+  {
+    "name": "Ed Rollover IRA",
+    "type": "RolloverIRA",
+    "holdings": {
+      "stocks": 440806,
+      "bonds": 441396,
+      "cash": 48547
+    }
+  },
+  {
+    "name": "Joint",
+    "type": "Brokerage",
+    "holdings": {
+      "stocks": 1213632,
+      "bonds": 137861,
+      "cash": 21464
+    }
+  },
+  {
+    "name": "Wendy Brokerage",
+    "type": "Brokerage",
+    "holdings": {
+      "stocks": 113533,
+      "bonds": 74249,
+      "cash": 162
+    }
+  },
+  {
+    "name": "Wendy Trad IRA",
+    "type": "TradIRA",
+    "holdings": {
+      "stocks": 18000,
+      "bonds": 0,
+      "cash": 92
+    }
+  },
+  {
+    "name": "Wendy 401k",
+    "type": "401k",
+    "holdings": {
+      "stocks": 24913,
+      "bonds": 16866,
+      "cash": 0
+    }
+  },
+  {
+    "name": "Wendy Rollover IRA",
+    "type": "RolloverIRA",
+    "holdings": {
+      "stocks": 443065,
+      "bonds": 230878,
+      "cash": 88
+    }
+  }
+]
+
