@@ -2,7 +2,6 @@ import json
 import numpy as np
 from account_factory import AccountFactory
 
-np.random.seed(3161975)
 # SPY_MEAN = 0.1151
 # SPY_STDDEV = 0.1960
 SPY_MEAN = 0.0902  # 9.02% from https://www.lazyportfolioetf.com/etf/spdr-sp-500-spy/
@@ -49,7 +48,7 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
             printed = True
 
         requested_dollars = how_much_alg.get_how_much_to_withdraw(prev_withdraw_rate, accounts)
-
+        
         withdrawal, tax_paid = withdraw_alg.withdraw(accounts, requested_dollars)
 
         percentage_of_portfolio = round(withdrawal / total_value, 4) if total_value else 0

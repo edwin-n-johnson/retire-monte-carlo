@@ -2,6 +2,7 @@ import csv
 import locale
 
 NAMES_TO_TYPES = {
+    'Ed Brokerage': 'Brokerage',
     'Ed rIRA': 'RothIRA',
     'Ed rollover IRA': 'RolloverIRA',
     'Ed tIRA': 'TradIRA',

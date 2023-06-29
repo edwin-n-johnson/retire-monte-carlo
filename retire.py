@@ -7,11 +7,11 @@ from wdalgo_post_tax_first import WDAlgoPostTaxFirst
 from simulator import run_simulation
 import loader
 import matplotlib.pyplot as plt
-import json
+import numpy as np
 import pprint
 
-START_YEAR = 2032
-END_YEAR = 2065
+START_YEAR = 48
+END_YEAR = 78
 ITERATIONS = 100
 # HOWMUCH_ALGORITHM = HMAlgoConstant4()
 HOWMUCH_ALGORITHM = HMAlgoConstantDollars(120000)
@@ -20,8 +20,12 @@ TAX_MANAGER = TaxManager()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('filename')
+parser.add_argument('--seed', '-s')
 args = parser.parse_args()
 print("Loading account data from: {}".format(args.filename))
+
+if args.seed:
+    np.random.seed(int(args.seed))
 
 results = []
 for i in range(ITERATIONS):
