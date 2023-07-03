@@ -1,4 +1,5 @@
 foo*.py
+temp*
 
 logs/
 inputs/
