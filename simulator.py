@@ -31,7 +31,6 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
 
     for year in years:
         inflation = max(0, round(np.random.normal(INFLATION_MEAN, INFLATION_STDDEV), 4))
-        # inflation = 0
         inflation_list.append(inflation)
         stock_return = round(np.random.normal(SPY_MEAN, SPY_STDDEV), 4)
         stock_return_list.append(stock_return)
@@ -40,11 +39,12 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
 
         total_value = sum([item for a in accounts for item in list(a.get_values().values())])
         values_list.append(total_value)
+        num = 5
         if total_value == 0 and not printed:
             print("Iteration {} hit zero on year {}".format(iteration, year))
-            print(" * First 4 inflation: {}".format(", ".join([str(x) for x in inflation_list[:4]])))
-            print(" * First 4 stock returns: {}".format(", ".join([str(x) for x in stock_return_list[:4]])))
-            print(" * First 4 bond returns: {}".format(", ".join([str(x) for x in bond_return_list[:4]])))
+            print(" * First {} inflation: {}".format(num, ", ".join([str(x) for x in inflation_list[:num]])))
+            print(" * First {} stock returns: {}".format(num, ", ".join([str(x) for x in stock_return_list[:num]])))
+            print(" * First {} bond returns: {}".format(num, ", ".join([str(x) for x in bond_return_list[:num]])))
             printed = True
 
         requested_dollars = how_much_alg.get_how_much_to_withdraw(prev_withdraw_rate, accounts)

@@ -4,6 +4,8 @@ class Account:
     def __init__(self, acct_def, tax_manager):
         self.name = acct_def['name']
         self.info = acct_def
+        if 'cash' not in self.info['holdings']:
+            self.info['holdings']['cash'] = {'basis': 0, 'balance': 0}
         if 'stocks' not in self.info['holdings']:
             self.info['holdings']['stocks'] = {'basis': 0, 'balance': 0}
         if 'bonds' not in self.info['holdings']:

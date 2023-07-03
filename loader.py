@@ -1,5 +1,7 @@
+import sys
 import csv
 import locale
+import pprint
 
 NAMES_TO_TYPES = {
     'Ed Brokerage': 'Brokerage',
@@ -9,6 +11,7 @@ NAMES_TO_TYPES = {
     'Joint E*Trade': 'Brokerage',
     'Wendy Fidelity': 'Brokerage',
     'Wendy GHX 401(k)': '401k',
+    'Wendy Maxar 401(k)': '401k',
     'Wendy Rollover IRA': 'RolloverIRA',
     'Wendy tIRA': 'TradIRA',
 }
@@ -35,22 +38,7 @@ def stof(string):
     return round(locale.atof(string))
 
 
-def load_accounts(filename):
-    locale.setlocale(locale.LC_ALL, '')
-    with open(filename, newline='') as f:
-        reader = csv.reader(f, dialect='excel-tab')
-        lines = []
-        # Read the file and create a list of lines skipping blanks
-        for line in reader:
-            items = [x for x in line if x]
-            if items:
-                lines.append(items)
-
-        # Remove a few lines that are not needed
-        del lines[-1]
-        del lines[1]
-        del lines[0]
-
+def load_accounts_cost_basis(lines):
     # Parse the lines
     data = []
     account = None
@@ -71,5 +59,73 @@ def load_accounts(filename):
             account['holdings'][t]['balance'] += stof(line[2])
         else:
             raise RuntimeError('Invalid line: {}'.format(line))
+
+    return data
+
+
+def load_accounts_asset_alloc(lines):
+    # Parse the lines
+    data = []
+    account = None
+    for line in lines:
+        if len(line) == 1:
+            account = {'name': line[0], 'type': NAMES_TO_TYPES[line[0]], 'holdings': {}}
+        elif len(line) == 3 and 'TOTAL Investments' in line[0]:
+            pass
+        elif len(line) == 4 and 'TOTAL' in line[0]:
+            basis_s = line[1]
+            if '*' in basis_s:
+                basis_s = basis_s[:-1]
+            account['total'] = {'basis': stof(basis_s), 'balance': stof(line[3])}
+            data.append(account)
+            account = None
+        elif len(line) in [4, 7, 8] and 'TOTAL' not in line[0]:
+            t = FUNDS_TO_TYPES[line[0]]
+            if t not in account['holdings'].keys():
+                account['holdings'][t] = {'basis': 0, 'balance': 0}
+            if len(line) == 4:
+                basis = stof(line[1])
+                balance = stof(line[3])
+            elif len(line) == 7:
+                basis = stof(line[4])
+                balance = stof(line[6])
+            elif len(line) == 8:
+                basis = stof(line[5])
+                balance = stof(line[7])
+            else:
+                raise RuntimeError('Invalid line: {}'.format(line))
+
+            account['holdings'][t]['basis'] += basis
+            account['holdings'][t]['balance'] += balance
+
+        else:
+            raise RuntimeError('Invalid line: {}'.format(line))
+
+    return data
+
+
+def load_accounts(file_obj):
+    file_obj.seek(0)
+    locale.setlocale(locale.LC_ALL, '')
+    reader = csv.reader(file_obj, dialect='excel-tab')
+    lines = []
+    # Read the file and create a list of lines skipping blanks
+    for line in reader:
+        items = [x for x in line if x]
+        if items:
+            lines.append(items)
+
+    first_line = lines[0][0]
+    # Remove a few lines that are not needed
+    for i in [-5, -4, -3, -2, -1, 1, 0]:
+        del lines[i]
+    # What type are we
+    data = None
+    if 'Cost Basis' in first_line:
+        data = load_accounts_cost_basis(lines)
+    elif 'Asset Allocation' in first_line:
+        data = load_accounts_asset_alloc(lines)
+    else:
+        raise RuntimeError('Invalid first line: {}'.format(first_line))
 
     return data
