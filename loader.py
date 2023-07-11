@@ -69,10 +69,12 @@ def load_accounts_asset_alloc(lines):
     account = None
     for line in lines:
         if len(line) == 1:
+            #print('Found acct start: {}'.format(line[0]))
             account = {'name': line[0], 'type': NAMES_TO_TYPES[line[0]], 'holdings': {}}
         elif len(line) == 3 and 'TOTAL Investments' in line[0]:
             pass
         elif len(line) == 4 and 'TOTAL' in line[0]:
+            #print('Found acct total: {} -> {}'.format(account['name'], line[3]))
             basis_s = line[1]
             if '*' in basis_s:
                 basis_s = basis_s[:-1]
@@ -95,6 +97,7 @@ def load_accounts_asset_alloc(lines):
             else:
                 raise RuntimeError('Invalid line: {}'.format(line))
 
+            #print('  Found fund {} ({}) -> {}'.format(line[0], t, balance))
             account['holdings'][t]['basis'] += basis
             account['holdings'][t]['balance'] += balance
 
@@ -104,7 +107,8 @@ def load_accounts_asset_alloc(lines):
     return data
 
 
-def load_accounts(file_obj):
+def load_accounts(filename):
+    file_obj = open(filename, "r")
     file_obj.seek(0)
     locale.setlocale(locale.LC_ALL, '')
     reader = csv.reader(file_obj, dialect='excel-tab')
@@ -114,11 +118,19 @@ def load_accounts(file_obj):
         items = [x for x in line if x]
         if items:
             lines.append(items)
+    #print("Initial parsing:")
+    #pprint.pprint(lines)
+    #print()
+    file_obj.close()
 
     first_line = lines[0][0]
     # Remove a few lines that are not needed
-    for i in [-5, -4, -3, -2, -1, 1, 0]:
+    for i in [-2, -1, 1, 0]:
         del lines[i]
+    #print("After cleanup")
+    #pprint.pprint(lines)
+    #print()
+
     # What type are we
     data = None
     if 'Cost Basis' in first_line:
