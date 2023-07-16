@@ -15,13 +15,13 @@ class AccountFactory:
                 case 'Brokerage':
                     accounts.append(Brokerage(data, tax_manager))
                 case '401k':
-                    accounts.append(FourOhOneKay(data, tax_manager))
+                    accounts.append(FourOhOneKay(data, tax_manager, year=60))
                 case 'RolloverIRA':
-                    accounts.append(RolloverIRA(data, tax_manager))
+                    accounts.append(RolloverIRA(data, tax_manager, year=60))
                 case 'RothIRA':
-                    accounts.append(RothIRA(data, tax_manager))
+                    accounts.append(RothIRA(data, tax_manager, year=60))
                 case 'TradIRA':
-                    accounts.append(TradIRA(data, tax_manager))
+                    accounts.append(TradIRA(data, tax_manager, year=60))
                 case _:
                     raise RuntimeError('Unknown account type: {}'.format(data['type']))
         return accounts

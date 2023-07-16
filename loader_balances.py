@@ -2,6 +2,7 @@ import sys
 import csv
 import locale
 import pprint
+import logging
 
 NAMES_TO_TYPES = {
     'Ed Brokerage': 'Brokerage',
@@ -38,7 +39,7 @@ def stof(string):
     return round(locale.atof(string))
 
 
-def load_accounts_cost_basis(lines):
+def load_accounts_cost_basis(lines, enable_logging=True):
     # Parse the lines
     data = []
     account = None
@@ -63,18 +64,20 @@ def load_accounts_cost_basis(lines):
     return data
 
 
-def load_accounts_asset_alloc(lines):
+def load_accounts_asset_alloc(lines, enable_logging=True):
     # Parse the lines
     data = []
     account = None
     for line in lines:
         if len(line) == 1:
-            #print('Found acct start: {}'.format(line[0]))
+            if enable_logging:
+                logging.debug('Found acct start: {}'.format(line[0]))
             account = {'name': line[0], 'type': NAMES_TO_TYPES[line[0]], 'holdings': {}}
         elif len(line) == 3 and 'TOTAL Investments' in line[0]:
             pass
         elif len(line) == 4 and 'TOTAL' in line[0]:
-            #print('Found acct total: {} -> {}'.format(account['name'], line[3]))
+            if enable_logging:
+                logging.debug('Found acct total: {} -> {}'.format(account['name'], line[3]))
             basis_s = line[1]
             if '*' in basis_s:
                 basis_s = basis_s[:-1]
@@ -97,7 +100,8 @@ def load_accounts_asset_alloc(lines):
             else:
                 raise RuntimeError('Invalid line: {}'.format(line))
 
-            #print('  Found fund {} ({}) -> {}'.format(line[0], t, balance))
+            if enable_logging:
+                logging.debug('  Found fund {} ({}) -> ${:,.2f}'.format(line[0], t, balance))
             account['holdings'][t]['basis'] += basis
             account['holdings'][t]['balance'] += balance
 
@@ -107,7 +111,7 @@ def load_accounts_asset_alloc(lines):
     return data
 
 
-def load_accounts(filename):
+def load_accounts(filename, enable_logging=True):
     file_obj = open(filename, "r")
     file_obj.seek(0)
     locale.setlocale(locale.LC_ALL, '')
@@ -118,25 +122,25 @@ def load_accounts(filename):
         items = [x for x in line if x]
         if items:
             lines.append(items)
-    #print("Initial parsing:")
-    #pprint.pprint(lines)
-    #print()
+    if enable_logging:
+        logging.debug("Initial parsing:")
+        logging.debug(lines)
     file_obj.close()
 
     first_line = lines[0][0]
     # Remove a few lines that are not needed
     for i in [-2, -1, 1, 0]:
         del lines[i]
-    #print("After cleanup")
-    #pprint.pprint(lines)
-    #print()
+    if enable_logging:
+        logging.debug("After cleanup")
+        logging.debug(lines)
 
     # What type are we
     data = None
     if 'Cost Basis' in first_line:
-        data = load_accounts_cost_basis(lines)
+        data = load_accounts_cost_basis(lines, enable_logging=enable_logging)
     elif 'Asset Allocation' in first_line:
-        data = load_accounts_asset_alloc(lines)
+        data = load_accounts_asset_alloc(lines, enable_logging=enable_logging)
     else:
         raise RuntimeError('Invalid first line: {}'.format(first_line))
 

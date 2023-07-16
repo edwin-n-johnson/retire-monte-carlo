@@ -1,4 +1,5 @@
 import json
+import logging
 import numpy as np
 from account_factory import AccountFactory
 
@@ -12,7 +13,7 @@ INFLATION_MEAN = 0.03  # 3.0% from https://www.bogleheads.org/forum/viewtopic.ph
 INFLATION_STDDEV = 0.013  # From above
 
 
-def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, tax_manager, do_print=False):
+def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, tax_manager):
     accounts = AccountFactory.build_accounts(account_data, tax_manager)
     prev_withdraw_rate = 0
     values_list = []
@@ -20,7 +21,7 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
     stock_return_list = []
     bond_return_list = []
     log_events = []
-    printed = not do_print
+    logged = False
 
     # Log first year values
     log_events.append({
@@ -30,7 +31,7 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
     })
 
     for year in years:
-        inflation = max(0, round(np.random.normal(INFLATION_MEAN, INFLATION_STDDEV), 4))
+        inflation = 0.02 # max(0, round(np.random.normal(INFLATION_MEAN, INFLATION_STDDEV), 4))
         inflation_list.append(inflation)
         stock_return = round(np.random.normal(SPY_MEAN, SPY_STDDEV), 4)
         stock_return_list.append(stock_return)
@@ -40,16 +41,17 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
         total_value = sum([item for a in accounts for item in list(a.get_values().values())])
         values_list.append(total_value)
         num = 5
-        if total_value == 0 and not printed:
-            print("Iteration {} hit zero on year {}".format(iteration, year))
-            print(" * First {} inflation: {}".format(num, ", ".join([str(x) for x in inflation_list[:num]])))
-            print(" * First {} stock returns: {}".format(num, ", ".join([str(x) for x in stock_return_list[:num]])))
-            print(" * First {} bond returns: {}".format(num, ", ".join([str(x) for x in bond_return_list[:num]])))
-            printed = True
+        if total_value == 0 and not logged:
+            logging.warn("Iteration {} hit zero on year {}".format(iteration, year))
+            logging.warn(" * First {} inflation: {}".format(num, ", ".join([str(x) for x in inflation_list[:num]])))
+            logging.warn(" * First {} stock returns: {}".format(num, ", ".join([str(x) for x in stock_return_list[:num]])))
+            logging.warn(" * First {} bond returns: {}".format(num, ", ".join([str(x) for x in bond_return_list[:num]])))
+            logged = True
 
         requested_dollars = how_much_alg.get_how_much_to_withdraw(prev_withdraw_rate, accounts)
-        
+
         withdrawal, tax_paid = withdraw_alg.withdraw(accounts, requested_dollars)
+        logging.info("Year {}: Withdrew ${:,.2f} + taxes ${:,.2f}. Needed ${:,.2f}".format(year, withdrawal, tax_paid, requested_dollars))
 
         percentage_of_portfolio = round(withdrawal / total_value, 4) if total_value else 0
 
