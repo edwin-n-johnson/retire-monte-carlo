@@ -30,6 +30,7 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
         'Account Values': [{**{'Name': a.get_name()}, **a.get_values()} for a in accounts],
     })
 
+    logging.info("=================== Iterations {} ====================".format(iteration))
     for year in years:
         inflation = 0.02 # max(0, round(np.random.normal(INFLATION_MEAN, INFLATION_STDDEV), 4))
         inflation_list.append(inflation)
@@ -39,6 +40,9 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
         bond_return_list.append(bond_return)
 
         total_value = sum([item for a in accounts for item in list(a.get_values().values())])
+        logging.info("Year {}: Total ${:,.2f}. inflation {:.2}% stocks {:.2}% bonds {:.2}%"
+                     .format(year, total_value, 100*inflation, 100*stock_return, 100*bond_return))
+
         values_list.append(total_value)
         num = 5
         if total_value == 0 and not logged:
@@ -51,7 +55,9 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
         requested_dollars = how_much_alg.get_how_much_to_withdraw(prev_withdraw_rate, accounts)
 
         withdrawal, tax_paid = withdraw_alg.withdraw(accounts, requested_dollars)
-        logging.info("Year {}: Withdrew ${:,.2f} + taxes ${:,.2f}. Needed ${:,.2f}".format(year, withdrawal, tax_paid, requested_dollars))
+        total_pre = withdrawal + tax_paid
+        logging.info("         Withdrew ${:,.2f} + taxes ${:,.2f} = ${:,.2f}. Delta ${:,.2f}."
+                     .format(withdrawal, tax_paid, total_pre, withdrawal - requested_dollars))
 
         percentage_of_portfolio = round(withdrawal / total_value, 4) if total_value else 0
 
@@ -76,6 +82,8 @@ def run_simulation(iteration, years, account_data, how_much_alg, withdraw_alg, t
             acct.set_value('stocks', acct.get_value('stocks') / (1 + inflation))
             acct.set_value('bonds', acct.get_value('bonds') / (1 + inflation))
             # More logging
+
+        logging.info("------------------------------------------------------------")
 
     # Save log file
     with open('logs/events-{}.json'.format(iteration), 'w') as fp:
