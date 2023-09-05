@@ -5,7 +5,7 @@ class TaxManager:
     CAPITAL_GAINS_TABLE = [
         {'rate': 0.00, 'end': 41675},
         {'rate': 0.15, 'end': 459750},
-        {'rage': 0.20, 'end': 1000000000000}
+        {'rate': 0.20, 'end': 1000000000000}
     ]
 
     INCOME_TAX_TABLE = [

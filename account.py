@@ -1,7 +1,10 @@
+import logging
+
 class Account:
     THRESHOLD = 5
 
     def __init__(self, acct_def, tax_manager, year=-1):
+        logging.debug(acct_def)
         self._name = acct_def['name']
         self._info = acct_def
         if 'cash' not in self._info['holdings']:

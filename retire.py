@@ -9,13 +9,14 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from simulator import run_simulation
-import loader_balances
 from tax_manager import TaxManager
+from account_manager import AccountManager
 from hmalgo_constant_percentage import HMAlgoConstantPercentage
 from hmalgo_constant_dollars import HMAlgoConstantDollars
 from loader_withdraw import WithdrawAlgo
 
 TAX_MANAGER = TaxManager()
+
 
 class Options:
     def __init__(self, start, end, iterations, how_much):
@@ -32,6 +33,7 @@ class Options:
             'how_much': self.how_much,
         })
 
+
 def howmuch_algo_chooser(how_much):
     hm_type, hm_value = how_much
 
@@ -44,11 +46,15 @@ def howmuch_algo_chooser(how_much):
 
     return hm_algo
 
-def run_simulator_and_plot_results(window, balances, withdraws, options, result_label=None):
-    MAX_YTICK = 20000000
 
+def run_simulator_and_plot_results(window, balances, withdraws, options, result_label=None):
+    max_ytick = 20000000
+
+    account_manager = AccountManager(TAX_MANAGER)
     howmuch_algo = howmuch_algo_chooser(options.how_much)
     withdraw_algo = WithdrawAlgo(withdraws)
+
+    the_years = range(options.start, options.end)
 
     # Run the simulator
     results = []
@@ -57,12 +63,13 @@ def run_simulator_and_plot_results(window, balances, withdraws, options, result_
         results.append({})
 
         # Load account data
-        data = loader_balances.load_accounts(balances, enable_logging=first_time)
-        first_time = False
+        if first_time:
+            account_manager.toggle_logging()
+            first_time = False
+        account_manager.load_accounts(balances)
 
-        the_years = range(options.start, options.end)
         results[i]['values'], results[i]['inflations'], results[i]['stocks'], results[i]['bonds'] = \
-            run_simulation(i, the_years, data, howmuch_algo, withdraw_algo, TAX_MANAGER)
+            run_simulation(i, the_years, account_manager, howmuch_algo, withdraw_algo, TAX_MANAGER)
 
     # Print out summary of results
     failures = 0
@@ -78,14 +85,14 @@ def run_simulator_and_plot_results(window, balances, withdraws, options, result_
         result_label.config(text=overall_result)
 
     # Plot it all
-    #fig = matplotlib.figure.Figure(figsize = (8, 8), dpi = 100)
+    # fig = matplotlib.figure.Figure(figsize = (8, 8), dpi = 100)
     fig = matplotlib.figure.Figure()
 
     # adding the subplot
     plot1 = fig.add_subplot(111,
                             xlabel='Years', xlim=(options.start, options.end),
-                            ylabel='Amount', ylim=(0, MAX_YTICK),
-                            yticks=range(0, MAX_YTICK, 1000000))
+                            ylabel='Amount', ylim=(0, max_ytick),
+                            yticks=range(0, max_ytick, 1000000))
     # plotting the graph
     for i in range(options.iterations):
         plot1.plot(the_years, results[i]['values'])
@@ -126,6 +133,7 @@ def validate_and_next_step(root, balances_label, balances, withdraws_label, with
         howmuch = (howmuchtype.get(), float(howmuchval.get()))
         options = Options(int(start.get()), int(end.get()), int(iterations.get()), howmuch)
         run_simulator_and_plot_results(root, balances.get(), withdraws.get(), options, result_label)
+
 
 def run_gui(root, balances, withdraws, options):
     # create main frame
@@ -217,7 +225,7 @@ def run_gui(root, balances, withdraws, options):
 def cli(balances, withdraws, start, end, iterations, how_much, gui, debug, seed):
     level = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}[debug]
     logging.basicConfig(filename='logs/debug.log', filemode='w',
-                        format='%(levelname)s %(filename)s %(message)s', # %(asctime)s
+                        format='%(levelname)s %(filename)s %(message)s',
                         level=level,
                         datefmt='%H:%M:%S')
     logging.info("Loading account data from: {}".format(balances))

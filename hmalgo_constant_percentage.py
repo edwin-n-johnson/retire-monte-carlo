@@ -10,8 +10,8 @@ class HMAlgoConstantPercentage:
         logging.info("HMAlgo %age = {:.4}".format(self.percentage))
 
 
-    def get_how_much_to_withdraw(self, prev_percentage, accounts):
-        total_dollars = sum([a.get_total_value() for a in accounts])
+    def get_how_much_to_withdraw(self, prev_percentage, account_manager):
+        total_dollars = account_manager.get_total_value()
         logging.debug("Total dollars = ${:,.2f}".format(total_dollars))
         if self.withdrawal == 0:
             self.withdrawal = self.percentage * total_dollars
